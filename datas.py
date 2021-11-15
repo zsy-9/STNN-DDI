@@ -10,7 +10,7 @@ DDINumber = 1318
 
 #Pubchem
 def getstructure():
-    dataFolder = 'D:\模型们\pytensor2'
+    dataFolder = 'D:\models\pytensor2'
     DrugStructureAddr = dataFolder + '\Drugbank_CID_StrucVactor_pubchem_drug-881Matrix.txt'
     fileIn = open(DrugStructureAddr)
     DrugStructureMatrix = []
@@ -34,7 +34,7 @@ class Drugs(object):
 
 #train_DDI,C2_DDI,C3_DDI
 def getDDI():
-    dataFolder = 'D:\模型们\pytensor2'
+    dataFolder = 'D:\models\pytensor2'
     DrugStructureAddr = dataFolder + '\AdverseDrugDrugInteractionDataset.txt'
     fileIn = open(DrugStructureAddr)
     line = fileIn.readline()
@@ -64,7 +64,7 @@ def getDDI():
 
 #train_DDI,C1_DDI
 def getDDI1():
-    dataFolder = 'D:\模型们\pytensor2'
+    dataFolder = 'D:\models\pytensor2'
     DrugStructureAddr = dataFolder + '\AdverseDrugDrugInteractionDataset.txt'
     fileIn = open(DrugStructureAddr)
     line = fileIn.readline()

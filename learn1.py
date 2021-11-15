@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 from torch.utils import data
 from torch.autograd import Variable
 import math
-#训练参数设置
+# parameter setting
 parser=argparse.ArgumentParser()
 parser.add_argument('--epochs',type=int,default=100)
 parser.add_argument('--batch_size',type=int,default=256)
@@ -21,7 +21,7 @@ parser.add_argument('--learning_rate', default=0.0001, type=float,help="Learning
 parser.add_argument('--decay1', default=0.9, type=float,help="decay rate for the first moment estimate in Adam")
 parser.add_argument('--decay2', default=0.999, type=float,help="decay rate for second moment estimate in Adam")
 args=parser.parse_args()
-#数据导入
+#data processing
 class MyDataset(data.Dataset):
     def __init__(self, data1, data2, data3, labels):
         self.data1 = data1
@@ -67,19 +67,18 @@ test_dataset=MyDataset(DDIstructure_1_te,DDIstructure_2_te,DDIinteraction_te,lab
 test_loader=DataLoader(dataset=test_dataset,batch_size=5000,shuffle=True)
 
 def binary_evaluation_result(label_true, score_predict):
-    roc_auc_score1 = metrics.roc_auc_score(label_true, score_predict)
     precision, recall, _ = metrics.precision_recall_curve(
         label_true, score_predict)
     pr_auc_score = metrics.auc(recall, precision)
     return pr_auc_score
 
-#模型
+#model
 model=CP(10)
-#优化过程
+#optimization
 optimizer=optim.Adam(model.parameters(), lr=args.learning_rate, betas=(args.decay1, args.decay2))
-#损失函数
+#loss
 loss = torch.nn.MSELoss(reduction='mean')
-#测试
+#test
 def test(DDI_test,model):
     model.eval()
     y_pred = []
@@ -91,15 +90,12 @@ def test(DDI_test,model):
         truth = truth.numpy()
         y_label = y_label + truth.flatten().tolist()
         y_pred = y_pred + output.flatten().tolist()
-        print("\rtest进度：%d" % (step), end=' ')
+        print("\rtest progress：%d" % (step), end=' ')
     y_pred1 = np.array(y_pred)
     y_label1 = np.array(y_label)
     return roc_auc_score(y_label, y_pred), average_precision_score(y_label1, y_pred1.round(),average='micro'),f1_score(y_label1, y_pred1.round(),average='micro'),recall_score(y_label1, y_pred1.round(),average='micro'),binary_evaluation_result(y_label1, y_pred1.round()),accuracy_score(y_label1, y_pred1.round())
 
-
-
-
-#训练
+#train
 loss_history = []
 t_total=time.time()
 minauc=0
@@ -112,21 +108,19 @@ for epoch in range(args.epochs):
     for step, (data1, data2, data3, label) in enumerate(train_loader):
         model.train(True)
         data1, data2, data3, label = (Variable(data1).float(), Variable(data2).float(),Variable(data3).float(),Variable(label).float())
-        #print(data1,data2,data3,label)
-        #print('------------------------------------------------------')
         predictions, factors = model(data1,data2,data3)
         truth=label
         l = loss(predictions,truth)
         optimizer.zero_grad()
         l.backward()
         optimizer.step()
-        print("\r进度：%d" %(step),end=' ')
+        print("\rprogress：%d" %(step),end=' ')
         truth=truth.numpy()
         y_label_train = y_label_train + truth.flatten().tolist()
         y_pred_train = y_pred_train + predictions.flatten().tolist()
     roc_train = roc_auc_score(y_label_train, y_pred_train)
     print(roc_train)
-    #加入测试集
+    #Test in each step
     roc, precision, f1, recall, aupr, accuracy = test(valid_loader,model)
     print(roc,precision,aupr, accuracy)
     roc, precision, f1, recall, aupr, accuracy = test(test_loader,model)
